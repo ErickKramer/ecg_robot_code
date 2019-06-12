@@ -8,7 +8,7 @@ from morse.builder import ATRV, Pose, Waypoint, Environment, SemanticCamera, Pas
 from morse.builder import Zone
 from math import pi
 from morse.builder import *
-import morse.helpers.colors
+#import morse.helpers.colors
 import json
 
 import os

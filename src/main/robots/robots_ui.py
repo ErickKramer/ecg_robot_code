@@ -20,6 +20,7 @@ class RobotUserAgent(UserAgent):
 		self.specializer=RobotSpecializer(self.analyzer)
 
 	def output_stream(self, tag, message):
+		print("Robots_ui")
 		print("{}: {}".format(tag, message))
 		# MAC only
 		#subprocess.Popen(["say", message])

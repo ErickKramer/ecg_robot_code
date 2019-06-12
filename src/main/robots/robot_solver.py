@@ -5,14 +5,14 @@ Author: seantrott <seantrott@icsi.berkeley.edu>
 A RobotProblemSolver that extends the CoreProblemSolver in the NLUAS module.
 
 The CoreProblemSolver handles much of the dispatching and routing. The design here
-is fairly general and could probably be used across domains, with different implementations 
+is fairly general and could probably be used across domains, with different implementations
 of the individual methods that "route_action" routes to:
--command_{actionary} --> executes command from parameters 
--query_{actionary} --> answers question from parameters 
-    -evaluate_{actionary} --> returns a boolean and a msg, e.g. "not enough fuel" 
+-command_{actionary} --> executes command from parameters
+-query_{actionary} --> answers question from parameters
+    -evaluate_{actionary} --> returns a boolean and a msg, e.g. "not enough fuel"
 -assertion_{actionary} --> if possible, it makes a change to the underlying world state based on parameters
 
-The other key method is get_described_object, which unpacks an ObjectDescriptor and 
+The other key method is get_described_object, which unpacks an ObjectDescriptor and
 maps it to a list of potential candidates from the world model. In certain cases,
 clarification is requested.
 
@@ -38,14 +38,16 @@ path = os.getcwd() + "/src/main/"
 
 class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolver):
     def __init__(self, args):
+        # print('===========================================================')
+        # print('Robot Problem Solver!')
+        # print('===========================================================')
         CoreProblemSolver.__init__(self, args)
         TwoDimensionalAvoidanceSolver.__init__(self)
         self.__path__ = os.getcwd() + "/src/main/"
-        self.headings = dict(north=(0.0, 1.0, 0.0), south=(0.0, -1.0, 0.0), 
+        self.headings = dict(north=(0.0, 1.0, 0.0), south=(0.0, -1.0, 0.0),
                     east=(1.0, 0.0, 0.0), west=(-1.0, 0.0, 0.0))
-        
-        self.world = self.build_world("mock/world.json") #build('mock')
-        #self.world = self.build_world("mock/world.json") #build('mock')
+
+        self.world = self.build_world("mock/world.json") #build('mock') The world can be change
 
         self._recent = []
         self.recent_protagonists = []
@@ -84,11 +86,11 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
     def euclidean_distance(self, p, q):
         """ Gets euclidean distance between two points. Takes in points, not objects. Expects points in dictionary format."""
-        return sqrt(pow((p['x']-q['x'] ),2) + pow((p['y']-q['y'] ),2) ) 
+        return sqrt(pow((p['x']-q['x'] ),2) + pow((p['y']-q['y'] ),2) )
 
 
     def solve_causal(self, parameters, predicate):
-        """ This needs work. It should actually do more reasoning, to determine what precisely it's being asked to do. 
+        """ This needs work. It should actually do more reasoning, to determine what precisely it's being asked to do.
         Currently, it just repackages the n-tuple and reroutes it.
         """
         agent = self.get_described_object(parameters['causalAgent']['objectDescriptor'])
@@ -149,7 +151,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
 
 
-    def evaluate_pickup(self, parameters): 
+    def evaluate_pickup(self, parameters):
         if self.eventFeatures and "modality" in self.eventFeatures and self.eventFeatures['modality'] == "can":
             negated = self.eventFeatures['negated']
             # TODO: what to do about negated, here?
@@ -210,7 +212,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
         heading = parameters['affectedProcess']['heading']['headingDescriptor']
         protagonist = self.get_described_object(parameters['protagonist']['objectDescriptor'])
         goal = parameters['affectedProcess']['spg']['spgDescriptor']['goal']
-        
+
 
         distance = parameters['affectedProcess']['distance']
         info = dict(goal=None,
@@ -254,13 +256,13 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
             pos = information['protagonist'].pos
             fuel_cost = self.calculate_work(information['protagonist'].weight, self.euclidean_distance(pos, destination))
             information['protagonist'].fuel -= fuel_cost
-            self.move(information['protagonist'], destination['x'], destination['y'], destination['z'], 
+            self.move(information['protagonist'], destination['x'], destination['y'], destination['z'],
                 information['speed'], tolerance=3.5)
-            
-            
-            
-            
-            #setattr(getattr(information['protagonist'], 'fuel'), 
+
+
+
+
+            #setattr(getattr(information['protagonist'], 'fuel'),
         else:
             pass
             # TO DO: What to do here?
@@ -323,7 +325,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
     def getpos(self, inst):
         p = getattr(getattr(self.world, inst), 'pos')
-        return (p['x'], p['y'], p['z']) 
+        return (p['x'], p['y'], p['z'])
 
     def heading_info(self, protagonist, heading, distance):
         n = float(distance['value'])
@@ -346,13 +348,13 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
             answer = self.evaluate_can_push_move(parameters)
             self.push_to_location(info['actedUpon'], info['goal'], info['protagonist'])
-            
+
         elif info['heading'] and info['heading']['headingDescriptor']:
             answer = self.evaluate_can_push_move(parameters)
             distance = info['distance']['scaleDescriptor']['value']
             work = self.calculate_work(info['actedUpon'].weight + info['protagonist'].weight, distance)
             if answer['value']:
-                
+
                 self.push_direction(info['heading']['headingDescriptor'], info['actedUpon'], info['distance'], info['protagonist'])
                 info['protagonist'].fuel -= work
             else:
@@ -379,7 +381,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
     def get_push_direction_info(self, heading, obj, distance):
         addpos = vector_mul(-6, self.headings[heading])
         addpos2 = vector_mul(distance, self.headings[heading])
-        return {'x1': obj.pos['x'] + addpos[0], 
+        return {'x1': obj.pos['x'] + addpos[0],
                 'y1': obj.pos['y'] + addpos[1],
                 'x2': obj.pos['x'] + addpos2[0],
                 'y2': obj.pos['y'] + addpos2[1]}
@@ -387,7 +389,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
 
     def get_push_info(self, parameters):
-        # 
+        #
         if parameters['affectedProcess']['heading']:
             heading = parameters['affectedProcess']['heading']['headingDescriptor']
         else:
@@ -414,7 +416,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
 
     def distance(self, a, b):
-        return sqrt(pow((a.pos['x']-b.pos['x'] ),2) + pow((a.pos['y']-b.pos['y'] ),2) ) 
+        return sqrt(pow((a.pos['x']-b.pos['x'] ),2) + pow((a.pos['y']-b.pos['y'] ),2) )
 
     def get_near(self, candidates, obj):
         locations = []
@@ -429,7 +431,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
     def is_near(self, first, second):
         """ Could be redone. Essentially an arbitrary threshold. Could be rewritten
-        to evaluate "near" in a more relativistic way. 
+        to evaluate "near" in a more relativistic way.
         Could also take size into account. """
         if first == second:
             return False
@@ -440,7 +442,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
     def is_on(self, first, second):
         """ Could be redone. Just tests whether the z value of second is higher than first, and x and y are close."""
-        
+
         if first == second:
             return False
         #t = self.get_threshold(first, second)
@@ -602,7 +604,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
         if referent.type in types:
             index = types.index(referent.type)
             self._recent.remove(self._recent[index])
-        self._recent.append(referent)    
+        self._recent.append(referent)
 
 
     def get_described_object(self, description, multiple=False):
@@ -613,7 +615,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
         elif len(objs) > 1:
             if "givenness" in description:
                 if description['givenness'] in ['typeIdentifiable', "distinct"]:
-                    # Should actually iterate through _recent 
+                    # Should actually iterate through _recent
                     copy = list(objs)
                     if description['givenness'] == "distinct":
                         for obj in objs:
@@ -646,7 +648,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
             #print(value)
             #print(description)
             if value == description:
-                if k: 
+                if k:
                     if key==k:
                         new["*" + key] = value
                 else:
@@ -740,7 +742,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
             if key == "referent":
                 return value[0].upper() + value.replace("_instance", "")[1:]
             if key == "color": # or key == "size":
-                attributes += " " + value 
+                attributes += " " + value
             if key == "location":
                 attributes += " "  + value
             elif key == "locationDescriptor":
@@ -821,8 +823,8 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
             self.respond_to_query(message=reply)
 
     def assertion_possess(self, parameters):
-        """ Changes some value in the world, based on the properties of the protagonist and the posssessed object. 
-        Currently operates in much the same way as assertion_be, since properties and possessions 
+        """ Changes some value in the world, based on the properties of the protagonist and the posssessed object.
+        Currently operates in much the same way as assertion_be, since properties and possessions
         are stored in the same way in the world model.
         """
         protagonist = self.get_described_object(parameters['protagonist']['objectDescriptor'])
@@ -846,7 +848,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
         else:
             return dict(value=False, reason="{} does not have a property or possession of type {}.".format(protagonist.name, possession_type))
 
-    
+
 
     def query_move(self, parameters):
         answer = self.evaluate_move(parameters)
@@ -886,7 +888,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
                     return {'value': False, 'reason': "{} is in the way".format(stripped)}
         return {'value': True, 'reason': "it is possible"}
 
-    # TODO: Clean this up. 
+    # TODO: Clean this up.
     def evaluate_push_move(self,parameters):
         info = self.get_push_info(parameters)
         # Check if you're asking whether a robot CAN push a box
@@ -931,7 +933,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
         else:
             return {'value': False, 'reason': "I can't answer that..."}
 
-    # Assumes force is in Newtons, for W=F*D equation    
+    # Assumes force is in Newtons, for W=F*D equation
     def calculate_work(self, force, distance):
         return force*distance
 
@@ -1094,7 +1096,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
             self.p_features = pfeatures['processFeatures']
         if value == "ongoing":
             return self.solve_while(condition, core, "command")
-        
+
         if self.evaluate_condition(condition['eventProcess']):
             self.route_event(core, "command")
         elif parameters['alternative']['eventProcess']:
@@ -1109,7 +1111,7 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
     def move(self, mover, x, y, z=1.0, speed=2, tolerance=3, collide=False):
         self.recent_protagonists.append(mover)
-        
+
         msg = "{} is moving to ({}, {}, {}).".format(mover.name, x, y, z)
         #print()
         self.respond_to_query(msg)
@@ -1144,6 +1146,3 @@ class BasicRobotProblemSolver(CoreProblemSolver): #, TwoDimensionalAvoidanceSolv
 
 if __name__ == "__main__":
     solver = BasicRobotProblemSolver(sys.argv[1:])
-
-
-
